@@ -6,11 +6,11 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
-    "encoding/json"
 	"math"
+	"net"
 	"strings"
 )
 
@@ -232,14 +232,14 @@ func ScrambleJson(s []byte) []byte {
 }
 
 func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int) (string, int) {
-    switch dat.(type) {
-    case string:
+	switch dat.(type) {
+	case string:
 		var s [JsonStringLen]byte
 		for i := 0; i < JsonStringLen; i++ {
 			s[i] = bytesOutputAlphabet[(sumBytes[(i+index)%sumLength])%bytesOutputAlphabetLength]
 		}
-		return fmt.Sprintf("\"%s\"", string(s[:])), (index+JsonStringLen)%sumLength
-    case float64:
+		return fmt.Sprintf("\"%s\"", string(s[:])), (index + JsonStringLen) % sumLength
+	case float64:
 		val := dat.(float64)
 		var s []byte
 		if val == math.Trunc(val) {
@@ -252,17 +252,17 @@ func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int
 				s[i] = '0' + (sumBytes[(i+index)%sumLength])%10
 			}
 		}
-		return string(s), (index+len(s))%sumLength
-    case bool:
-        return fmt.Sprintf("%t", dat.(bool)), index
-    case nil:
+		return string(s), (index + len(s)) % sumLength
+	case bool:
+		return fmt.Sprintf("%t", dat.(bool)), index
+	case nil:
 		return "null", index
-    case []interface{}:
+	case []interface{}:
 		builder := strings.Builder{}
 		builder.WriteString("[")
 		first := true
 		idx := index
-        for _, v := range dat.([]interface{}) {
+		for _, v := range dat.([]interface{}) {
 			if !first {
 				builder.WriteString(",")
 			}
@@ -270,15 +270,15 @@ func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int
 			builder.WriteString(s)
 			idx = index
 			first = false
-        }
+		}
 		builder.WriteString("]")
 		return builder.String(), idx
-    case map[string]interface{}:
+	case map[string]interface{}:
 		builder := strings.Builder{}
 		builder.WriteString("{")
 		first := true
 		idx := index
-        for k, v := range dat.(map[string]interface{}) {
+		for k, v := range dat.(map[string]interface{}) {
 			if !first {
 				builder.WriteString(",")
 			}
@@ -287,12 +287,12 @@ func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int
 			builder.WriteString(s)
 			idx = index
 			first = false
-        }
+		}
 		builder.WriteString("}")
 		return builder.String(), idx
-    default:
+	default:
 		return "", index
-    }
+	}
 }
 
 func GetScrambleByName(value string) (func(s []byte) []byte, error) {

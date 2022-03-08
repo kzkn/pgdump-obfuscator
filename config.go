@@ -16,7 +16,7 @@ var Config *Configuration = &Configuration{
 			ScrambleBytes,
 		},
 
-        	// address_useraddress
+		// address_useraddress
 		TargetedObfuscation{
 			Target{Table: "address_useraddress", Column: "phone_number"},
 			ScrambleDigits,
