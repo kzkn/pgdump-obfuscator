@@ -234,9 +234,16 @@ func ScrambleJson(s []byte) []byte {
 func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int) (string, int) {
 	switch dat.(type) {
 	case string:
+		runes := []rune(dat.(string))
+		var r rune
 		var s [JsonStringLen]byte
 		for i := 0; i < JsonStringLen; i++ {
-			s[i] = bytesOutputAlphabet[(sumBytes[(i+index)%sumLength])%bytesOutputAlphabetLength]
+			if i < len(runes) {
+				r = runes[i]
+			} else {
+				r = 0
+			}
+			s[i] = bytesOutputAlphabet[(sumBytes[(i+index)%sumLength]+byte(r))%bytesOutputAlphabetLength]
 		}
 		return fmt.Sprintf("\"%s\"", string(s[:])), (index + JsonStringLen) % sumLength
 	case float64:
@@ -249,7 +256,7 @@ func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int
 		}
 		for i, b := range s {
 			if b >= '0' && b <= '9' {
-				s[i] = '0' + (sumBytes[(i+index)%sumLength])%10
+				s[i] = '0' + (sumBytes[(i+index)%sumLength]+b)%10
 			}
 		}
 		return string(s), (index + len(s)) % sumLength
