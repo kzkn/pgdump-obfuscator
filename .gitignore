@@ -1,2 +1,4 @@
 bin/
 pgdump-obfuscator
+pgdump-obfuscator-darwin
+pgdump-obfuscator-linux-amd64
