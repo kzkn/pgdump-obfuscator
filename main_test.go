@@ -188,6 +188,8 @@ func TestScrambleJson(t *testing.T) {
 	assertScramble(t, ScrambleJson, "[\"foo\",12345]", "[\"KK4oFUetr5\",27654]")
 	assertScramble(t, ScrambleJson, "[\"foo\",{\"bar\":123}]", "[\"OQBOM2lTtM\",{\"bar\":789}]")
 	assertScramble(t, ScrambleJson, "[\"foo\",[1,2]]", "[\"8N2VE8KPsC\",[9,8]]")
+	assertScramble(t, ScrambleJson, "{\"\\\"foo\\\"\":1234}", "{\"\\\"foo\\\"\":7807}")
+	assertScramble(t, ScrambleJson, "{\"foo\\nbar\":1234}", "{\"foo\\nbar\":2747}")
 	assertScramble(t, ScrambleJson, "malformed", "")
 }
 

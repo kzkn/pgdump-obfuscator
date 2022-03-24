@@ -286,10 +286,15 @@ func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int
 		first := true
 		idx := index
 		for k, v := range dat.(map[string]interface{}) {
+			key, err := json.Marshal(k)
+			if err != nil {
+				continue
+			}
 			if !first {
 				builder.WriteString(",")
 			}
-			builder.WriteString("\"" + k + "\":")
+			builder.WriteString(string(key))
+			builder.WriteString(":")
 			s, index := scrambleJsonData(v, sumBytes, sumLength, idx)
 			builder.WriteString(s)
 			idx = index
