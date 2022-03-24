@@ -169,6 +169,30 @@ func TestScrambleInet(t *testing.T) {
 	assertScramble(t, ScrambleInet, "97.34.0.18", "e4ed:d550:209d:9f10:f690:953:5d4f:c0d6")
 }
 
+func TestScrambleJson(t *testing.T) {
+	Salt = []byte("test-salt")
+	assertScramble(t, ScrambleJson, "true", "true")
+	assertScramble(t, ScrambleJson, "false", "false")
+	assertScramble(t, ScrambleJson, "null", "null")
+	assertScramble(t, ScrambleJson, "\"foo\"", "\"ygNhbBZGsu\"")
+	assertScramble(t, ScrambleJson, "\"long long long text\"", "\"zXzRxNYjj3\"")
+	assertScramble(t, ScrambleJson, "1234", "0036")
+	assertScramble(t, ScrambleJson, "1234.5", "7581.450344")
+	assertScramble(t, ScrambleJson, "{\"foo\":1234}", "{\"foo\":1218}")
+	assertScramble(t, ScrambleJson, "{\"foo\":\"ハロー\",\"baz\":\"ワールド\"}", "{\"foo\":\"xYjlXNRqav\",\"baz\":\"PKwz5Yai7S\"}")
+	assertScramble(t, ScrambleJson, "{\"foo\":true}", "{\"foo\":true}")
+	assertScramble(t, ScrambleJson, "{\"foo\":false}", "{\"foo\":false}")
+	assertScramble(t, ScrambleJson, "{\"foo\":null}", "{\"foo\":null}")
+	assertScramble(t, ScrambleJson, "{\"foo\":{\"bar\":\"baz\"}}", "{\"foo\":{\"bar\":\"ZfevvuJBc4\"}}")
+	assertScramble(t, ScrambleJson, "{\"foo\":[\"bar\",1234,true,false,null]}", "{\"foo\":[\"qrqu6cMr2K\",3790,true,false,null]}")
+	assertScramble(t, ScrambleJson, "[\"foo\",12345]", "[\"KK4oFUetr5\",27654]")
+	assertScramble(t, ScrambleJson, "[\"foo\",{\"bar\":123}]", "[\"OQBOM2lTtM\",{\"bar\":789}]")
+	assertScramble(t, ScrambleJson, "[\"foo\",[1,2]]", "[\"8N2VE8KPsC\",[9,8]]")
+	assertScramble(t, ScrambleJson, "{\"\\\"foo\\\"\":1234}", "{\"\\\"foo\\\"\":7807}")
+	assertScramble(t, ScrambleJson, "{\"foo\\nbar\":1234}", "{\"foo\\nbar\":2747}")
+	assertScramble(t, ScrambleJson, "malformed", "")
+}
+
 func BenchmarkProcessShort(b *testing.B) {
 	b.StopTimer()
 	config := &Configuration{

@@ -6,15 +6,19 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net"
+	"strings"
 )
 
 var Salt []byte
 
 const emailDomain = "@example.com"
 const DomainLen = 10
+const JsonStringLen = 10
 
 func GenScrambleBytes(maxLength uint) func([]byte) []byte {
 	return func(s []byte) []byte {
@@ -211,6 +215,98 @@ func ScrambleInet(s []byte) []byte {
 	return []byte(ip.String())
 }
 
+func ScrambleJson(s []byte) []byte {
+	hash := sha256.New()
+	const sumLength = 32 // SHA256/8
+	hash.Write(Salt)
+	hash.Write(s)
+	sumBytes := hash.Sum(nil)
+
+	var dat interface{}
+	if err := json.Unmarshal(s, &dat); err != nil {
+		return []byte{}
+	}
+
+	var text, _ = scrambleJsonData(dat, sumBytes, sumLength, 0)
+	return []byte(text)
+}
+
+func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int) (string, int) {
+	switch dat.(type) {
+	case string:
+		runes := []rune(dat.(string))
+		var r rune
+		var s [JsonStringLen]byte
+		for i := 0; i < JsonStringLen; i++ {
+			if i < len(runes) {
+				r = runes[i]
+			} else {
+				r = 0
+			}
+			s[i] = bytesOutputAlphabet[(sumBytes[(i+index)%sumLength]+byte(r))%bytesOutputAlphabetLength]
+		}
+		return fmt.Sprintf("\"%s\"", string(s[:])), (index + JsonStringLen) % sumLength
+	case float64:
+		val := dat.(float64)
+		var s []byte
+		if val == math.Trunc(val) {
+			s = []byte(fmt.Sprintf("%d", int(val)))
+		} else {
+			s = []byte(fmt.Sprintf("%f", val))
+		}
+		for i, b := range s {
+			if b >= '0' && b <= '9' {
+				s[i] = '0' + (sumBytes[(i+index)%sumLength]+b)%10
+			}
+		}
+		return string(s), (index + len(s)) % sumLength
+	case bool:
+		return fmt.Sprintf("%t", dat.(bool)), index
+	case nil:
+		return "null", index
+	case []interface{}:
+		builder := strings.Builder{}
+		builder.WriteString("[")
+		first := true
+		idx := index
+		for _, v := range dat.([]interface{}) {
+			if !first {
+				builder.WriteString(",")
+			}
+			s, index := scrambleJsonData(v, sumBytes, sumLength, idx)
+			builder.WriteString(s)
+			idx = index
+			first = false
+		}
+		builder.WriteString("]")
+		return builder.String(), idx
+	case map[string]interface{}:
+		builder := strings.Builder{}
+		builder.WriteString("{")
+		first := true
+		idx := index
+		for k, v := range dat.(map[string]interface{}) {
+			key, err := json.Marshal(k)
+			if err != nil {
+				continue
+			}
+			if !first {
+				builder.WriteString(",")
+			}
+			builder.WriteString(string(key))
+			builder.WriteString(":")
+			s, index := scrambleJsonData(v, sumBytes, sumLength, idx)
+			builder.WriteString(s)
+			idx = index
+			first = false
+		}
+		builder.WriteString("}")
+		return builder.String(), idx
+	default:
+		return "", index
+	}
+}
+
 func GetScrambleByName(value string) (func(s []byte) []byte, error) {
 	switch value {
 	case "bytes":
@@ -225,6 +321,8 @@ func GetScrambleByName(value string) (func(s []byte) []byte, error) {
 		return ScrambleUniqueEmail, nil
 	case "inet":
 		return ScrambleInet, nil
+	case "json":
+		return ScrambleJson, nil
 	}
 	return nil, errors.New(fmt.Sprintf("%s is not registered scramble function", value))
 }
