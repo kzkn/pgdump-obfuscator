@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"net"
 	"strings"
 )
 
@@ -204,15 +203,17 @@ func ScrambleInet(s []byte) []byte {
 	hash.Write(s)
 	sumBytes := hash.Sum(nil)
 
-	var ip net.IP
+	var ip string
 	// Decide to output IPv4 or IPv6 based on first bit of hash sum.
 	// Gives about 50% chance to each option.
 	if sumBytes[0]&0x80 != 0 {
-		ip = net.IP(sumBytes[:16])
+		ip = fmt.Sprintf("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+			sumBytes[0], sumBytes[1], sumBytes[2], sumBytes[3], sumBytes[4], sumBytes[5], sumBytes[6], sumBytes[7],
+			sumBytes[8], sumBytes[9], sumBytes[10], sumBytes[11], sumBytes[12], sumBytes[13], sumBytes[14], sumBytes[15])
 	} else {
-		ip = net.IP(sumBytes[:4])
+		ip = fmt.Sprintf("%d.%d.%d.%d", sumBytes[0], sumBytes[1], sumBytes[2], sumBytes[3])
 	}
-	return []byte(ip.String())
+	return []byte(ip)
 }
 
 func ScrambleJson(s []byte) []byte {

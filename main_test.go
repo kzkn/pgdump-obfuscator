@@ -166,7 +166,7 @@ func TestScrambleUniqueEmail(t *testing.T) {
 func TestScrambleInet(t *testing.T) {
 	Salt = []byte("test-salt")
 	assertScramble(t, ScrambleInet, "142.34.56.78", "56.42.246.77")
-	assertScramble(t, ScrambleInet, "97.34.0.18", "e4ed:d550:209d:9f10:f690:953:5d4f:c0d6")
+	assertScramble(t, ScrambleInet, "97.34.0.18", "e4ed:d550:209d:9f10:f690:0953:5d4f:c0d6")
 }
 
 func TestScrambleJson(t *testing.T) {
