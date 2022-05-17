@@ -260,7 +260,12 @@ func scrambleJsonData(dat interface{}, sumBytes []byte, sumLength int, index int
 				s[i] = '0' + (sumBytes[(i+index)%sumLength]+b)%10
 			}
 		}
-		return string(s), (index + len(s)) % sumLength
+		str := string(s)
+		str = strings.TrimLeft(str, "0")
+		if str == "" {
+			str = "0"
+		}
+		return str, (index + len(str)) % sumLength
 	case bool:
 		return fmt.Sprintf("%t", dat.(bool)), index
 	case nil:

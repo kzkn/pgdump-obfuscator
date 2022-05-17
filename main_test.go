@@ -176,7 +176,7 @@ func TestScrambleJson(t *testing.T) {
 	assertScramble(t, ScrambleJson, "null", "null")
 	assertScramble(t, ScrambleJson, "\"foo\"", "\"ygNhbBZGsu\"")
 	assertScramble(t, ScrambleJson, "\"long long long text\"", "\"zXzRxNYjj3\"")
-	assertScramble(t, ScrambleJson, "1234", "0036")
+	assertScramble(t, ScrambleJson, "1234", "36")
 	assertScramble(t, ScrambleJson, "1234.5", "7581.450344")
 	assertScramble(t, ScrambleJson, "{\"foo\":1234}", "{\"foo\":1218}")
 	assertScramble(t, ScrambleJson, "{\"foo\":\"ハロー\",\"baz\":\"ワールド\"}", "{\"foo\":\"xYjlXNRqav\",\"baz\":\"PKwz5Yai7S\"}")
